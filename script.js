@@ -65,9 +65,19 @@ function validate() {
   const month3Val = month3.value.trim();
   let returnValue = true;
 
+  if (month1Val === '' && month2Val === '' && month3Val === '') {
+    setError(month3, 'Atleast one month needs to be filled');
+    returnValue = false;
+  } else {
+    setSuccess(month3);
+  }
+
   if (month1Val !== '') {
     if (!isNumber(month1Val)) {
-      setError(month1, 'Only Numerical Value without comma');
+      setError(month1, 'Only numbers without comma should be entered');
+      returnValue = false;
+    } else if (parseFloat(month1Val) < 0) {
+      setError(month1, 'Only positive numbers without comma should be entered');
       returnValue = false;
     } else {
       setSuccess(month1);
@@ -76,7 +86,10 @@ function validate() {
 
   if (month2Val !== '') {
     if (!isNumber(month2Val)) {
-      setError(month2, 'Only Numerical Value without comma');
+      setError(month2, 'Only numbers without comma should be entered');
+      returnValue = false;
+    } else if (parseFloat(month2Val) < 0) {
+      setError(month2, 'Only positive numbers without comma should be entered');
       returnValue = false;
     } else {
       setSuccess(month2);
@@ -85,19 +98,17 @@ function validate() {
 
   if (month3Val !== '') {
     if (!isNumber(month3Val)) {
-      setError(month3, 'Only Numerical Value without comma');
+      console.log('month3 Is not a number');
+      setError(month3, 'Only numbers without comma should be entered');
+      returnValue = false;
+    } else if (parseFloat(month3Val) < 0) {
+      setError(month3, 'Only positive numbers without comma should be entered');
       returnValue = false;
     } else {
       setSuccess(month3);
     }
   }
 
-  if (month1Val === '' && month2Val === '' && month3Val === '') {
-    setError(month3, 'Atleast one month needs to be filled');
-    returnValue = false;
-  } else {
-    setSuccess(month3);
-  }
   return returnValue;
 }
 
@@ -322,7 +333,10 @@ function calculateScheme() {
 
 // reset All function
 function resetAll() {
-  initializeVariables();
+  setSuccess(month1),
+    setSuccess(month2),
+    setSuccess(month3),
+    initializeVariables();
   month1.value = '';
   month2.value = '';
   month3.value = '';
@@ -332,9 +346,13 @@ function resetAll() {
 // display result function
 function showResult() {
   let totalEarnings =
-    month1SchemeValue + month2SchemeValue + month3SchemeValue + qtrSchemeValue;
+    month1SchemeValue +
+    month2SchemeValue +
+    month3SchemeValue +
+    qtrSchemeValue +
+    allThreeMonthBonus;
   resultContainer.innerHTML = `<div class="border result p-4 rounded bg-white">
-          <h6 class="mb-3 text-success">Scheme Result</h6>
+          <h6 class="mb-3 text-success text-uppercase font-weight-bold">Scheme Result</h6>
           <p class="m-0 mb-2">Total Quarterly Purchase: Rs. ${qtrValue}</p>
           <h6 class="m-0">Monthly earnings:</h6>
           <p class="m-0">Month 1 scheme earning : Rs. ${month1SchemeValue}; slab: ${month1Slab}</p>
@@ -349,7 +367,7 @@ function showResult() {
           <p class="m-0 mb-2">Quarterly earning: Rs. ${qtrSchemeValue} </p>
           <h6 class="m-0">Top up for buying all 3 months:</h6>
           <p class="m-0 mb-2">Top Up Value: Rs. ${allThreeMonthBonus} </p>
-          <h6 class="mb-2">Total Scheme Earning: Rs. ${totalEarnings}</h6>
+          <h6 class="mb-2 text-info text-uppercase font-weight-bold">Total Scheme Earning: Rs. ${totalEarnings}</h6>
           <h6 class="m-0">Bonus for active members only:</h6>
           <p class="m-0">Bonus Value: Rs ${activeBonus} </p>
           <p class="m-0 mb-2">Bonus Value (Virtual Payment): Rs ${activeBonusVirtual}</p>
