@@ -1,11 +1,15 @@
-// form validation
-const form = document.getElementById('form');
+import { customers, slab, silver, gold, diamond, platinum } from './data.js';
+
+// document variables
 const month1 = document.getElementById('month1');
 const month2 = document.getElementById('month2');
 const month3 = document.getElementById('month3');
 const btnSubmit = document.getElementById('btnSubmit');
 const btnReset = document.getElementById('btnReset');
 const resultContainer = document.getElementById('result');
+const custNumber = document.getElementById('custNo');
+const btnCustSubmit = document.getElementById('custBtnSubmit');
+const custResult = document.getElementById('custResult');
 
 // Variables for calculation
 let qtrValue = 0;
@@ -23,24 +27,76 @@ let month2SchemeValue = 0;
 let month3SchemeValue = 0;
 let qtrSchemeValue = 0;
 let allThreeMonthBonus = 0;
-let isActive = true;
 let activeBonus = 0;
 let activeBonusVirtual = 0;
 let categoryBonus = 0;
 
-// Scheme slab data
-const slab = [
-  { silver: 50000, gold: 125000, diamond: 250000, platinum: 400000 },
-  { silver: 70000, gold: 175000, diamond: 350000, platinum: 500000 },
-  { silver: 80000, gold: 200000, diamond: 400000, platinum: 600000 },
-  { silver: 200000, gold: 500000, diamond: 1000000, platinum: 1500000 },
-];
+//Active Club Member
+let isActive = false;
 
-// Scheme points and value data
-const silver = { monthPoints: 20, qtrPoints: 5, value: 6 };
-const gold = { monthPoints: 20, qtrPoints: 5, value: 8 };
-const diamond = { monthPoints: 20, qtrPoints: 5, value: 10 };
-const platinum = { monthPoints: 20, qtrPoints: 5, value: 12 };
+// Click event listner on customer submit
+btnCustSubmit.addEventListener('click', (e) => {
+  e.preventDefault();
+  if (custValidate()) {
+    isActive = false;
+    showCustResult();
+  }
+});
+
+function custValidate() {
+  const customerNumber = custNumber.value.trim();
+  let returnValue = true;
+  const alphanumeric = /^[0-9a-zA-Z]+$/;
+
+  if (customerNumber === '') {
+    setError(custNumber, 'Customer number is required');
+    returnValue = false;
+  } else if (!customerNumber.match(alphanumeric)) {
+    setError(
+      custNumber,
+      'Enter only alphanumeric characters, no special characters'
+    );
+    returnValue = false;
+  } else if (!validCustNumber(customerNumber)) {
+    setError(
+      custNumber,
+      'Not a valid customer number for eg. 2NDS123456 or 3NDS123456'
+    );
+  } else {
+    setSuccess(custNumber);
+  }
+  return returnValue;
+}
+
+function validCustNumber(n) {
+  let custNumStr = n.toUpperCase().split('');
+  let returnValue = true;
+  let validNum = /\d{1}[a-z]{3}\d{6}/gi;
+  console.log(custNumStr, custNumStr.length, n.match(validNum));
+  if (custNumStr.length !== 10) {
+    returnValue = false;
+  }
+  if (!n.match(validNum)) {
+    returnValue = false;
+  }
+  return returnValue;
+}
+
+function showCustResult() {
+  let customer = custNumber.value.trim().toUpperCase();
+  let custData = customers.find((ele) => {
+    return ele['Member ID'] === customer;
+  });
+  if (custData) {
+    custResult.innerHTML = `<h5><u>${custData['Member Name']}</u><br><small class="text-info">Customer Status: ${custData['Member Status']}</small></h5>`;
+    if (custData['Member Status'] === 'Active Club') {
+      isActive = true;
+    }
+    btnCustSubmit.disabled = true;
+  } else {
+    custResult.innerHTML = `<small class="text-danger">Error: No customer with this ID found</small>`;
+  }
+}
 
 //Click event listner on submit
 btnSubmit.addEventListener('click', (e) => {
@@ -147,7 +203,6 @@ function initializeVariables() {
   month3SchemeValue = 0;
   qtrSchemeValue = 0;
   allThreeMonthBonus = 0;
-  isActive = true;
   activeBonus = 0;
   activeBonusVirtual = 0;
   categoryBonus = 0;
@@ -337,6 +392,10 @@ function resetAll() {
     setSuccess(month2),
     setSuccess(month3),
     initializeVariables();
+  custNumber.value = '';
+  custResult.innerHTML = '';
+  isActive = false;
+  btnCustSubmit.disabled = false;
   month1.value = '';
   month2.value = '';
   month3.value = '';
@@ -368,9 +427,14 @@ function showResult() {
           <h6 class="m-0">Top up for buying all 3 months:</h6>
           <p class="m-0 mb-2">Top Up Value: Rs. ${allThreeMonthBonus} </p>
           <h6 class="mb-2 text-info text-uppercase font-weight-bold">Total Scheme Earning: Rs. ${totalEarnings}</h6>
-          <h6 class="m-0">Bonus for active members only:</h6>
-          <p class="m-0">Bonus Value: Rs ${activeBonus} </p>
-          <p class="m-0 mb-2">Bonus Value (Virtual Payment): Rs ${activeBonusVirtual}</p>
+          
+          ${
+            isActive
+              ? `<h6 class="m-0">Bonus for active club members only:</h6>
+              <p class="m-0">Bonus Value: Rs ${activeBonus} </p>
+          <p class="m-0 mb-2">Bonus Value (Virtual Payment): Rs ${activeBonusVirtual}</p>`
+              : ''
+          }          
           <h6 class="m-0">
             Top up bonus for adding new category (<small
               >20% contribution of quarter sales</small
