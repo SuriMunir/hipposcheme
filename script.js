@@ -1,5 +1,3 @@
-import { customers, slab, silver, gold, diamond, platinum } from './data.js';
-
 // document variables
 const month1 = document.getElementById('month1');
 const month2 = document.getElementById('month2');
@@ -10,6 +8,19 @@ const resultContainer = document.getElementById('result');
 const custNumber = document.getElementById('custNo');
 const btnCustSubmit = document.getElementById('custBtnSubmit');
 const custResult = document.getElementById('custResult');
+
+const slab = [
+  { silver: 50000, gold: 125000, diamond: 250000, platinum: 400000 },
+  { silver: 70000, gold: 175000, diamond: 350000, platinum: 500000 },
+  { silver: 80000, gold: 200000, diamond: 400000, platinum: 600000 },
+  { silver: 200000, gold: 500000, diamond: 1000000, platinum: 1500000 },
+];
+
+// Scheme points and value data
+const silver = { monthPoints: 20, qtrPoints: 5, value: 6 };
+const gold = { monthPoints: 20, qtrPoints: 5, value: 8 };
+const diamond = { monthPoints: 20, qtrPoints: 5, value: 10 };
+const platinum = { monthPoints: 20, qtrPoints: 5, value: 12 };
 
 // Variables for calculation
 let qtrValue = 0;
@@ -72,7 +83,6 @@ function validCustNumber(n) {
   let custNumStr = n.toUpperCase().split('');
   let returnValue = true;
   let validNum = /\d{1}[a-z]{3}\d{6}/gi;
-  console.log(custNumStr, custNumStr.length, n.match(validNum));
   if (custNumStr.length !== 10) {
     returnValue = false;
   }
@@ -82,19 +92,24 @@ function validCustNumber(n) {
   return returnValue;
 }
 
-function showCustResult() {
+async function showCustResult() {
   let customer = custNumber.value.trim().toUpperCase();
-  let custData = customers.find((ele) => {
-    return ele['Member ID'] === customer;
-  });
-  if (custData) {
-    custResult.innerHTML = `<h5><u>${custData['Member Name']}</u><br><small class="text-info">Customer Status: ${custData['Member Status']}</small></h5>`;
-    if (custData['Member Status'] === 'Active Club') {
-      isActive = true;
+  const url = `https://hipposcheme-backend.herokuapp.com/api/members/${customer}`;
+  try {
+    const response = await fetch(url);
+    const data = await response.json();
+    let custData = data.data;
+    if (custData) {
+      custResult.innerHTML = `<h5><u>${custData['Member Name']}</u><br><small class="text-info">Customer Status: ${custData['Member Status']}</small></h5>`;
+      if (custData['Member Status'] === 'Active Club') {
+        isActive = true;
+      }
+      btnCustSubmit.disabled = true;
+    } else {
+      custResult.innerHTML = `<small class="text-danger">Error: No customer with this ID found</small>`;
     }
-    btnCustSubmit.disabled = true;
-  } else {
-    custResult.innerHTML = `<small class="text-danger">Error: No customer with this ID found</small>`;
+  } catch (error) {
+    console.log(error);
   }
 }
 
@@ -363,27 +378,6 @@ function calculateScheme() {
   }
 
   categoryBonus = parseInt(qtrValue * 0.005);
-
-  console.log(month1Slab, month2Slab, month3Slab, qtrSlab);
-  console.log(
-    qtrValue,
-    month1Val,
-    month2Val,
-    month3Val,
-    month1SchemeValue,
-    month2SchemeValue,
-    month3SchemeValue,
-    qtrSchemeValue,
-    month1Points,
-    month2Points,
-    month3Points,
-    qtrPoints,
-    totalPoints,
-    allThreeMonthBonus,
-    activeBonus,
-    activeBonusVirtual,
-    categoryBonus
-  );
 }
 
 // reset All function
